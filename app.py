@@ -254,5 +254,24 @@ def get_agencies():
         print(f"[API ERROR] Agencies: {str(e)}")
         return jsonify({'error': 'Database error'}), 500
 
+@app.route('/api/delete_emergencies', methods=['POST'])
+def delete_all_emergencies():
+    if 'agency_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+    try:
+        cur = mysql.connection.cursor()
+        cur.execute("DELETE FROM emergencies")
+        mysql.connection.commit()
+        return jsonify({'status': 'All emergencies deleted'})
+    except Exception as e:
+        mysql.connection.rollback()
+        print(f"[DELETE ERROR] Failed to delete emergencies: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('index'))
+
 if __name__ == '__main__':
     app.run(debug=True)
