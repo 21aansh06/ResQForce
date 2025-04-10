@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Rescue Network - Login</title>
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <div class="login-box">
+        <h1>Rescue Network Login</h1>
+        
+        {% if error %}
+        <div class="error">{{ error }}</div>
+        {% endif %}
+        
+        <form action="/login" method="POST">
+            <input type="email" name="email" placeholder="Email" required>
+            <input type="password" name="password" placeholder="Password" required>
+            <button type="submit">Login</button>
+        </form>
+        
+        <div class="register-link">
+            Don't have an account? <a href="/register">Register here</a>
+        </div>
+    </div>
+</body>
+</html>
