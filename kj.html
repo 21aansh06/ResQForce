@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Disaster Response System</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: #f0f2f5;
+            font-family: Arial, sans-serif;
+        }
+        .portal-box {
+            text-align: center;
+            padding: 40px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        .btn {
+            display: inline-block;
+            padding: 15px 30px;
+            margin: 15px;
+            border-radius: 8px;
+            text-decoration: none;
+            color: white; font-size: 18px;
+            transition: transform 0.2s;
+        }
+        .rescue-btn { background: #3498db; }
+        .emergency-btn { background: #e74c3c;}
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="portal-box">
+        <h1>Disaster Response System</h1>
+        <a href="/login" class="btn rescue-btn">Rescue Team Login</a>
+        <a href="/client" class="btn emergency-btn">Report Emergency</a>
+    </div>
+</body>
+</html>
