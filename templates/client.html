@@ -9,6 +9,7 @@
 </head>
 <body>
     <div id="map"></div>
+
     <style>
         .report-box {
             width: 50%;
@@ -20,13 +21,13 @@
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.4);
             font-family: Arial, sans-serif;
         }
-    
+
         .report-box h3 {
             font-size: 24px;
             color: #2eccff;
             margin-bottom: 20px;
         }
-    
+
         select, textarea {
             width: 100%;
             padding: 12px;
@@ -37,27 +38,27 @@
             color: white;
             font-size: 16px;
         }
-    
+
         textarea {
             resize: vertical;
             min-height: 100px;
         }
-    
+
         .checkbox-group {
             margin-bottom: 20px;
         }
-    
+
         .checkbox-group label {
             display: block;
             margin: 5px 0;
             font-size: 16px;
             cursor: pointer;
         }
-    
+
         .checkbox-group input[type="checkbox"] {
             margin-right: 10px;
         }
-    
+
         button[type="submit"] {
             padding: 12px 24px;
             background-color: #e74c3c;
@@ -68,39 +69,37 @@
             cursor: pointer;
             transition: background 0.3s;
         }
-    
+
         button[type="submit"]:hover {
             background-color: #c0392b;
         }
     </style>
-    
+
     <div class="report-box">
         <h3>🚨 Report Emergency</h3>
-        <form action="/submit" method="post" onsubmit="reportEmergency(event)">
-            <select id="severity" name="severity" required>
-                <option value="low">🟢 Low Severity</option>
-                <option value="medium">🟡 Medium Severity</option>
-                <option value="high">🔴 High Severity</option>
+        <form onsubmit="reportEmergency(event)">
+            <select id="tagDropdown">
+                <option value="fire">🔥 Fire</option>
+                <option value="flood">🌊 Flood</option>
+                <option value="accident">🚨 Accident</option>
             </select>
-    
+
             <div class="checkbox-group">
                 <label><input type="checkbox" name="options" value="FireBrigade"> FireBrigade</label>
                 <label><input type="checkbox" name="options" value="Police"> Police</label>
                 <label><input type="checkbox" name="options" value="Ambulance"> Ambulance</label>
             </div>
-    
+
             <textarea 
                 id="description" 
                 name="description"
                 placeholder="Describe the emergency (e.g., 100 people trapped, need boats!)"
                 required
             ></textarea>
-    
+
             <button type="submit">Send Emergency Alert</button>
-        </form>
+        </form>
     </div>
-    
-    
 
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script>
@@ -111,7 +110,7 @@
 
         async function reportEmergency(event) {
             event.preventDefault();
-            
+
             if (!navigator.geolocation) {
                 alert("Geolocation not supported");
                 return;
@@ -120,26 +119,24 @@
             navigator.geolocation.getCurrentPosition(async pos => {
                 const lat = pos.coords.latitude;
                 const lng = pos.coords.longitude;
+                const description = document.getElementById('description').value;
+                const tag = document.getElementById('tagDropdown').value;
 
                 const response = await fetch('/api/report_emergency', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        lat,
-                        lng,
-                        description: document.getElementById('description').value,
-                        severity: document.getElementById('severity').value
-                    })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ lat, lng, description, tag })
                 });
 
                 if (response.ok) {
                     alert('Emergency reported successfully! Help is on the way.');
                     map.setView([lat, lng], 15);
                     L.marker([lat, lng]).addTo(map)
-                        .bindPopup('🚨 Emergency Reported Here').openPopup();
+                        .bindPopup(`🚨 ${tag.charAt(0).toUpperCase() + tag.slice(1)} Emergency`).openPopup();
 
                     document.getElementById('description').value = '';
-                    document.getElementById('severity').value = 'low';
+                } else {
+                    alert('Failed to report emergency.');
                 }
             }, () => {
                 alert("Please enable location access to report emergency!");
