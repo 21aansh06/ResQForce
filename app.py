@@ -110,6 +110,11 @@ def register():
             mysql.connection.rollback()
             return render_template('register.html', error=str(e))
     return render_template('register.html')
+@app.route('/emergency_map')
+def emergency_map():
+    if 'agency_id' not in session:
+        return redirect(url_for('login'))
+    return render_template('emergency_map.html')
 
 
 

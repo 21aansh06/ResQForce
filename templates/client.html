@@ -1,0 +1,74 @@
+<!-- templates/client.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Emergency Reporting | ResQForce</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&family=Space+Grotesk:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/client.css">
+</head>
+<body>
+    <div id="map"></div>
+    <div class="report-box">
+        <h3>🚨 Report Emergency</h3>
+        <form onsubmit="reportEmergency(event)">
+            <select id="severity" required>
+                <option value="low">🟢 Low Severity</option>
+                <option value="medium">🟡 Medium Severity</option>
+                <option value="high">🔴 High Severity</option>
+            </select>
+            <textarea 
+                id="description" 
+                placeholder="Describe the emergency (e.g., 100 people trapped, need boats!)"
+                required
+            ></textarea>
+            <button type="submit">Send Emergency Alert</button>
+        </form>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script>
+        const map = L.map('map').setView([20.5937, 78.9629], 5);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        async function reportEmergency(event) {
+            event.preventDefault();
+            
+            if (!navigator.geolocation) {
+                alert("Geolocation not supported");
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(async pos => {
+                const lat = pos.coords.latitude;
+                const lng = pos.coords.longitude;
+
+                const response = await fetch('/api/report_emergency', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        lat,
+                        lng,
+                        description: document.getElementById('description').value,
+                        severity: document.getElementById('severity').value
+                    })
+                });
+
+                if (response.ok) {
+                    alert('Emergency reported successfully! Help is on the way.');
+                    map.setView([lat, lng], 15);
+                    L.marker([lat, lng]).addTo(map)
+                        .bindPopup('🚨 Emergency Reported Here').openPopup();
+
+                    document.getElementById('description').value = '';
+                    document.getElementById('severity').value = 'low';
+                }
+            }, () => {
+                alert("Please enable location access to report emergency!");
+            });
+        }
+    </script>
+</body>
+</html>
