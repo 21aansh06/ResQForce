@@ -198,5 +198,24 @@ def get_emergencies():
         print(f"[API ERROR] Emergencies: {str(e)}")
         return jsonify({'error': 'Database error'}), 500
 
+@app.route('/dashboard')
+def dashboard():
+    if 'agency_id' not in session:
+        return redirect(url_for('login'))
+    return render_template('dashboard.html')
+
+@app.route('/api/agencies')
+def get_agencies():
+    if 'agency_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+        
+    try:
+        cur = mysql.connection.cursor()
+        cur.execute("SELECT id, name, latitude, longitude, expertise FROM agencies")
+        return jsonify(cur.fetchall())
+    except Exception as e:
+        print(f"[API ERROR] Agencies: {str(e)}")
+        return jsonify({'error': 'Database error'}), 500
+
 if __name__ == '__main__':
     app.run(debug=True)
