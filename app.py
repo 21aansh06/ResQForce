@@ -122,11 +122,7 @@ def emergency_map():
 def client_portal():
     return render_template('client.html')
 
-@app.route('/emergency_map')
-def emergency_map():
-    if 'agency_id' not in session:
-        return redirect(url_for('login'))
-    return render_template('emergency_map.html')
+
 
 if __name__ == '__main__':
     app.run(debug=True)
