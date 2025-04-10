@@ -9,22 +9,98 @@
 </head>
 <body>
     <div id="map"></div>
+    <style>
+        .report-box {
+            width: 50%;
+            margin: auto;
+            padding: 30px;
+            background: #111;
+            color: #fff;
+            border-radius: 15px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.4);
+            font-family: Arial, sans-serif;
+        }
+    
+        .report-box h3 {
+            font-size: 24px;
+            color: #2eccff;
+            margin-bottom: 20px;
+        }
+    
+        select, textarea {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            border: 1px solid #3498db;
+            background: #1e1e1e;
+            color: white;
+            font-size: 16px;
+        }
+    
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+    
+        .checkbox-group {
+            margin-bottom: 20px;
+        }
+    
+        .checkbox-group label {
+            display: block;
+            margin: 5px 0;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    
+        .checkbox-group input[type="checkbox"] {
+            margin-right: 10px;
+        }
+    
+        button[type="submit"] {
+            padding: 12px 24px;
+            background-color: #e74c3c;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+    
+        button[type="submit"]:hover {
+            background-color: #c0392b;
+        }
+    </style>
+    
     <div class="report-box">
         <h3>🚨 Report Emergency</h3>
-        <form onsubmit="reportEmergency(event)">
-            <select id="severity" required>
+        <form action="/submit" method="post" onsubmit="reportEmergency(event)">
+            <select id="severity" name="severity" required>
                 <option value="low">🟢 Low Severity</option>
                 <option value="medium">🟡 Medium Severity</option>
                 <option value="high">🔴 High Severity</option>
             </select>
+    
+            <div class="checkbox-group">
+                <label><input type="checkbox" name="options" value="FireBrigade"> FireBrigade</label>
+                <label><input type="checkbox" name="options" value="Police"> Police</label>
+                <label><input type="checkbox" name="options" value="Ambulance"> Ambulance</label>
+            </div>
+    
             <textarea 
                 id="description" 
+                name="description"
                 placeholder="Describe the emergency (e.g., 100 people trapped, need boats!)"
                 required
             ></textarea>
+    
             <button type="submit">Send Emergency Alert</button>
-        </form>
+        </form>
     </div>
+    
+    
 
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script>
