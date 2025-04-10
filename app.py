@@ -17,11 +17,43 @@ app.config['MYSQL_DB'] = 'rescue_db'
 app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 app.config['MYSQL_CONNECT_TIMEOUT'] = 10
 
-# mysql = MySQL(app)
+mysql = MySQL(app)
+
+# Database Connection Test
+try:
+    with app.app_context():
+        cur = mysql.connection.cursor()
+        cur.execute("SELECT 1")
+        print("✅ Database connection successful!")
+        cur.close()
+except Exception as e:
+    print(f"❌ Database connection failed: {str(e)}")
+    print("Troubleshooting steps:")
+    print("1. Verify MySQL service is running")
+    print("2. Check username/password")
+    print("3. Confirm database exists")
+    print("4. Check firewall settings")
+    exit(1)
+
+def hash_password(password):
+    return hashlib.sha256(password.encode()).hexdigest()
+
+# Temporary debug route (remove in production)
+@app.route('/debug/emergencies')
+def debug_emergencies():
+    try:
+        cur = mysql.connection.cursor()
+        cur.execute("SELECT * FROM emergencies")
+        emergencies = cur.fetchall()
+        return jsonify({
+            'count': len(emergencies),
+            'emergencies': emergencies
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/')
-
 def index():
-
     return render_template('index.html')
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -78,5 +110,13 @@ def register():
             mysql.connection.rollback()
             return render_template('register.html', error=str(e))
     return render_template('register.html')
+
+
+
+@app.route('/client')
+def client_portal():
+    return render_template('client.html')
+
+
 if __name__ == '__main__':
     app.run(debug=True)
