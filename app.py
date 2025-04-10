@@ -116,6 +116,36 @@ def emergency_map():
         return redirect(url_for('login'))
     return render_template('emergency_map.html')
 
+@app.route('/api/report_emergency', methods=['POST'])
+def report_emergency():
+    try:
+        data = request.json
+        print(f"[EMERGENCY REPORT] Received: {data}")
+        
+        cur = mysql.connection.cursor()
+        cur.execute("""
+            INSERT INTO emergencies 
+            (latitude, longitude, description, severity, reported_by, status, created_at)
+            VALUES (%s, %s, %s, %s, 'public', 'pending', NOW())
+        """, (
+            data['lat'],
+            data['lng'],
+            data['description'],
+            data['severity']
+        ))
+        mysql.connection.commit()
+        
+        # Verify insertion
+        cur.execute("SELECT * FROM emergencies ORDER BY id DESC LIMIT 1")
+        new_emergency = cur.fetchone()
+        print(f"[EMERGENCY REPORT] Saved: {new_emergency}")
+        
+        return jsonify({'status': 'success', 'id': new_emergency['id']})
+    except Exception as e:
+        mysql.connection.rollback()
+        print(f"[EMERGENCY ERROR] Save failed: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
 
 
 @app.route('/client')
