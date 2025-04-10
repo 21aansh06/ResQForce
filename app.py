@@ -197,6 +197,43 @@ def get_emergencies():
     except Exception as e:
         print(f"[API ERROR] Emergencies: {str(e)}")
         return jsonify({'error': 'Database error'}), 500
+@app.route('/api/emergency_details')
+def get_all_emergency_details():
+    if 'agency_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+        
+    try:
+        cur = mysql.connection.cursor()
+        cur.execute("""
+            SELECT *, 
+                CAST(latitude AS DECIMAL(10,8)) AS latitude,
+                CAST(longitude AS DECIMAL(11,8)) AS longitude,
+                CASE severity
+                    WHEN 'high' THEN '🔴 High'
+                    WHEN 'medium' THEN '🟡 Medium' 
+                    ELSE '🟢 Low'
+                END as severity_display,
+                ROUND(6371000 * acos(
+                    cos(radians(%s)) * cos(radians(latitude)) * 
+                    cos(radians(longitude) - radians(%s)) + 
+                    sin(radians(%s)) * sin(radians(latitude))
+                )) AS distance
+            FROM emergencies
+            WHERE status = 'pending'
+            ORDER BY created_at DESC
+        """, (
+            session.get('latitude', 20.5937),
+            session.get('longitude', 78.9629),
+            session.get('latitude', 20.5937)
+        ))
+        
+        emergencies = cur.fetchall()
+        print(f"Returning {len(emergencies)} emergencies")
+        return jsonify(emergencies)
+        
+    except Exception as e:
+        print(f"Emergency details error: {str(e)}")
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/dashboard')
 def dashboard():
