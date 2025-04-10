@@ -152,7 +152,51 @@ def report_emergency():
 def client_portal():
     return render_template('client.html')
 
-
+@app.route('/api/update_location', methods=['POST'])
+def update_location():
+    if 'agency_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+        
+    data = request.json
+    try:
+        cur = mysql.connection.cursor()
+        cur.execute("""
+            UPDATE agencies 
+            SET latitude = %s, longitude = %s, last_updated = %s 
+            WHERE id = %s
+        """, (data['lat'], data['lng'], datetime.now(), session['agency_id']))
+        mysql.connection.commit()
+        
+        # Store in session for distance calculations
+        session['latitude'] = data['lat']
+        session['longitude'] = data['lng']
+        
+        return jsonify({'status': 'success'})
+    except Exception as e:
+        print(f"[API ERROR] Location Update: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+    
+@app.route('/api/emergencies')
+def get_emergencies():
+    try:
+        cur = mysql.connection.cursor()
+        cur.execute("""
+            SELECT *, 
+                CASE severity
+                    WHEN 'high' THEN '🔴 High'
+                    WHEN 'medium' THEN '🟡 Medium' 
+                    ELSE '🟢 Low'
+                END as severity_display
+            FROM emergencies
+            WHERE status = 'pending'
+            ORDER BY created_at DESC
+        """)
+        results = cur.fetchall()
+        print(f"[DEBUG] Found {len(results)} emergencies")
+        return jsonify(results)
+    except Exception as e:
+        print(f"[API ERROR] Emergencies: {str(e)}")
+        return jsonify({'error': 'Database error'}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
