@@ -118,33 +118,24 @@ def emergency_map():
 
 @app.route('/api/report_emergency', methods=['POST'])
 def report_emergency():
+    data = request.get_json()
+    lat = data.get('lat')
+    lng = data.get('lng')
+    description = data.get('description')
+    tag = data.get('tag')  # 👈 must match front-end 'tag'
+
     try:
-        data = request.json
-        print(f"[EMERGENCY REPORT] Received: {data}")
-        
         cur = mysql.connection.cursor()
         cur.execute("""
-            INSERT INTO emergencies 
-            (latitude, longitude, description, severity, reported_by, status, created_at)
-            VALUES (%s, %s, %s, %s, 'public', 'pending', NOW())
-        """, (
-            data['lat'],
-            data['lng'],
-            data['description'],
-            data['severity']
-        ))
+            INSERT INTO emergencies (latitude, longitude, description, tag, status, reported_by)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """, (lat, lng, description, tag, 'pending', 'public'))
         mysql.connection.commit()
-        
-        # Verify insertion
-        cur.execute("SELECT * FROM emergencies ORDER BY id DESC LIMIT 1")
-        new_emergency = cur.fetchone()
-        print(f"[EMERGENCY REPORT] Saved: {new_emergency}")
-        
-        return jsonify({'status': 'success', 'id': new_emergency['id']})
+        return jsonify({'message': 'Emergency reported successfully'}), 200
     except Exception as e:
-        mysql.connection.rollback()
-        print(f"[EMERGENCY ERROR] Save failed: {str(e)}")
-        return jsonify({'error': str(e)}), 500
+        print(f"[ERROR] {e}")
+        return jsonify({'error': 'Failed to report emergency'}), 500
+
 
 
 
@@ -197,22 +188,22 @@ def get_emergencies():
     except Exception as e:
         print(f"[API ERROR] Emergencies: {str(e)}")
         return jsonify({'error': 'Database error'}), 500
+# No filtering by severity or role anymore
 @app.route('/api/emergency_details')
 def get_all_emergency_details():
     if 'agency_id' not in session:
         return jsonify({'error': 'Unauthorized'}), 401
-        
+
     try:
+        lat = session.get('latitude', 20.5937)
+        lng = session.get('longitude', 78.9629)
+
         cur = mysql.connection.cursor()
-        cur.execute("""
+
+        query = """
             SELECT *, 
                 CAST(latitude AS DECIMAL(10,8)) AS latitude,
                 CAST(longitude AS DECIMAL(11,8)) AS longitude,
-                CASE severity
-                    WHEN 'high' THEN '🔴 High'
-                    WHEN 'medium' THEN '🟡 Medium' 
-                    ELSE '🟢 Low'
-                END as severity_display,
                 ROUND(6371000 * acos(
                     cos(radians(%s)) * cos(radians(latitude)) * 
                     cos(radians(longitude) - radians(%s)) + 
@@ -221,25 +212,30 @@ def get_all_emergency_details():
             FROM emergencies
             WHERE status = 'pending'
             ORDER BY created_at DESC
-        """, (
-            session.get('latitude', 20.5937),
-            session.get('longitude', 78.9629),
-            session.get('latitude', 20.5937)
-        ))
-        
+        """
+
+        cur.execute(query, (lat, lng, lat))
         emergencies = cur.fetchall()
-        print(f"Returning {len(emergencies)} emergencies")
         return jsonify(emergencies)
-        
+
     except Exception as e:
-        print(f"Emergency details error: {str(e)}")
+        print(f"[ERROR] Emergency details: {str(e)}")
         return jsonify({'error': str(e)}), 500
+
+
 
 @app.route('/dashboard')
 def dashboard():
     if 'agency_id' not in session:
         return redirect(url_for('login'))
-    return render_template('dashboard.html')
+
+    role = session.get('role', 'agency')
+
+    if role == 'ndrf':
+        return redirect(url_for('ndrf_dashboard'))
+    else:
+        return render_template('dashboard.html')
+
 
 @app.route('/api/agencies')
 def get_agencies():
@@ -272,6 +268,13 @@ def delete_all_emergencies():
 def logout():
     session.clear()
     return redirect(url_for('index'))
+
+@app.route('/ndrf_dashboard')
+def ndrf_dashboard():
+    if 'agency_id' not in session or session.get('role') != 'ndrf':
+        return redirect(url_for('login'))
+    return render_template('ndrf_dashboard.html')
+
 
 if __name__ == '__main__':
     app.run(debug=True)
