@@ -1,26 +1,20 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Rescue Network - Login</title>
-    <link rel="stylesheet" href="index.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ResQForce | OneTouch Rescue</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Space+Grotesk:wght@400;600&family=Unbounded:wght@500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="index.css">
 </head>
 <body>
-    <div class="login-box">
-        <h1>Rescue Network Login</h1>
-        
-        {% if error %}
-        <div class="error">{{ error }}</div>
-        {% endif %}
-        
-        <form action="/login" method="POST">
-            <input type="email" name="email" placeholder="Email" required>
-            <input type="password" name="password" placeholder="Password" required>
-            <button type="submit">Login</button>
-        </form>
-        
-        <div class="register-link">
-            Don't have an account? <a href="/register">Register here</a>
-        </div>
+  <div class="container">
+    <h1>ResQForce</h1>
+    <p class="tagline">OneTouch Emergency Response System</p>
+    <div class="button-group">
+      <a href="/login" class="btn">Rescue Team Login</a>
+      <a href="/client" class="btn danger">Report Emergency</a>
     </div>
+  </div>
 </body>
 </html>
