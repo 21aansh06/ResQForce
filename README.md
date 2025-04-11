@@ -6,27 +6,6 @@ ResQForce is a real-time emergency reporting and management platform built using
 ## 🖼️ Screenshots
 
 
-
-
-🔧 Features
-
-- 🧑‍🚒 **Agency Login & Registration**
-- 🗺️ **Live Emergency Map with Severity Indicators**
-- 🚨 **Report Emergency via Public API**
-- 📍 **Track and Update Agency Location**
-- 📊 **Dashboard with Pending Emergencies**
-- 🔐 **Session-based Authentication**
-- 🧼 **Delete All Emergencies (Admin Tool)**
-- 🛡 **NDRF Command Dashboard**
-
-
-🧱 Tech Stack
-
-- Backend: Flask (Python)
-- Database: MySQL
-- Frontend: HTML, CSS, JavaScript (via Jinja templates)
-- Other Tools: Flask-CORS, flask-mysqldb, LEAFLET.JS
-
 ## 📁 Project Structure
 ```plaintext
 ResQForce/
@@ -64,6 +43,27 @@ ResQForce/
 │   ├── ndrf_dashboard.html
 │   └── register.html
 ```
+
+
+🔧 Features
+
+- 🧑‍🚒 **Agency Login & Registration**
+- 🗺️ **Live Emergency Map with Severity Indicators**
+- 🚨 **Report Emergency via Public API**
+- 📍 **Track and Update Agency Location**
+- 📊 **Dashboard with Pending Emergencies**
+- 🔐 **Session-based Authentication**
+- 🧼 **Delete All Emergencies (Admin Tool)**
+- 🛡 **NDRF Command Dashboard**
+
+
+🧱 Tech Stack
+
+- Backend: Flask (Python)
+- Database: MySQL
+- Frontend: HTML, CSS, JavaScript (via Jinja templates)
+- Other Tools: Flask-CORS, flask-mysqldb, LEAFLET.JS
+
 
 
 # API endpoints
