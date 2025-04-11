@@ -56,7 +56,7 @@ ResQForce/
 ```
 
 
-🔧 Features
+##🔧 Features
 
 - 🧑‍🚒 **Agency Login & Registration**
 - 🗺️ **Live Emergency Map with Severity Indicators**
@@ -68,7 +68,7 @@ ResQForce/
 - 🛡 **NDRF Command Dashboard**
 
 
-🧱 Tech Stack
+##🧱 Tech Stack
 
 - Backend: Flask (Python)
 - Database: MySQL
