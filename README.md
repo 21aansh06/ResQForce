@@ -2,6 +2,9 @@
 
 A real-time emergency reporting and management platform built with Flask and MySQL. Agencies can register, log in, view emergencies on a live map, and update their location to assist faster. Citizens can report emergencies which are immediately visible to all responding agencies.
 
+![index](static/img/Screenshot 2025-04-11 074115.png)
+
+
 🔧 Features
 
 - 🧑‍🚒 **Agency Login & Registration**
