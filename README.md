@@ -4,6 +4,7 @@
 ResQForce is a real-time emergency reporting and management platform built using Flask (Python) for the backend and MySQL as the database. The platform is designed to bridge the communication gap between emergency response agencies and civilians during critical situations. It enables seamless coordination by providing a live map interface where all reported emergencies are displayed in real-time, helping first responders make quicker and more informed decisions.
 
 ## 🖼️ Screenshots
+![template-g139fde4c91280](https://github.com/21aansh06/ResQForce/blob/main/static/img/Screenshot%202025-04-11%20074115.png)
 
 
 ## 📁 Project Structure
