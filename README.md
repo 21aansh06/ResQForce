@@ -2,7 +2,8 @@
 
 A real-time emergency reporting and management platform built with Flask and MySQL. Agencies can register, log in, view emergencies on a live map, and update their location to assist faster. Citizens can report emergencies which are immediately visible to all responding agencies.
 
-![index](static/img/Screenshot 2025-04-11 074115.png)
+[![index](static/img/Screenshot 2025-04-11 074115.png)]([https://github.com/your-username/your-repo](https://github.com/21aansh06/ResQForce/blob/main/static/img/Screenshot%202025-04-11%20074115.png))
+
 
 
 🔧 Features
