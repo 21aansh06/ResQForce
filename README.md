@@ -6,6 +6,8 @@ ResQForce is a real-time emergency reporting and management platform built using
 ## 🖼️ Screenshots
 ![template-g139fde4c91280](https://github.com/21aansh06/ResQForce/blob/main/static/img/Screenshot%202025-04-11%20074115.png)
 
+<img src="https://github.com/21aansh06/ResQForce/blob/main/static/img/Screenshot%202025-04-11%20074115.png?raw=true" alt="index" width="600"/>
+
 
 ## 📁 Project Structure
 ```plaintext
