@@ -30,7 +30,14 @@ ResQForce is a real-time emergency reporting and management platform built using
 📁 Project Structure
 
 ResQForce/
-├── app.py           
+│
+├── app.py
+├── README.md
+│
+├── sql/
+│   ├── sample_data.sql
+│   └── schema.sql
+│
 ├── static/
 │   ├── css/
 │   │   ├── client.css
@@ -39,9 +46,15 @@ ResQForce/
 │   │   ├── index.css
 │   │   ├── login.css
 │   │   └── register.css
-│   └── js/
-│       ├── dashboard.js
-│       └── emergency_map.js
+│   │
+│   ├── js/
+│   │   ├── dashboard.js
+│   │   └── emergency_map.js
+│   │
+│   └── img/
+│       ├── Screenshot 2025-04-11 at XX.XX.XX.png
+│       └── ... (more screenshots)
+│
 ├── templates/
 │   ├── client.html
 │   ├── dashboard.html
@@ -50,8 +63,6 @@ ResQForce/
 │   ├── login.html
 │   ├── ndrf_dashboard.html
 │   └── register.html
-└── requirements.txt            
-
 
 
 
