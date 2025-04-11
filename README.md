@@ -22,6 +22,7 @@ A real-time emergency reporting and management platform built with Flask and MyS
 - Other Tools: Flask-CORS, flask-mysqldb, LEAFLET.JS
 
 📁 Project Structure
+
 ResQForce/
 ├── app.py           
 ├── static/
@@ -43,33 +44,10 @@ ResQForce/
 │   ├── login.html
 │   ├── ndrf_dashboard.html
 │   └── register.html
-└── requirements.txt               # Python dependencies (optional)
+└── requirements.txt            
 
 
-Installation
-# Clone the repo
-git clone https://github.com/yourusername/rescue-management.git
-cd rescue-management
 
-# Create virtual environment and install dependencies
-python -m venv venv
-source venv/bin/activate   # On Windows: venv\Scripts\activate
-pip install -r requirements.txt
-
-# Configure MySQL in app.py or .env
-# Login to MySQL and run:
-CREATE DATABASE rescue_db;
-USE rescue_db;
-
-Configure MySQL Database
-Edit app.py with your MySQL credentials:
-app.config['MYSQL_HOST'] = 'localhost'
-app.config['MYSQL_USER'] = 'your_username'
-app.config['MYSQL_PASSWORD'] = 'your_password'
-app.config['MYSQL_DB'] = 'rescue_db'
-
-# Run SQL schema (if you have one)
-source schema.sql;
 
 # API endpoints
 - POST /api/report_emergency
@@ -77,5 +55,4 @@ source schema.sql;
 - POST /api/update_location
 - GET  /api/agencies
 
-🧪 Running the App
-python app.py
+
