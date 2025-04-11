@@ -1,8 +1,8 @@
 🚨 Rescue Management Web App
 
-A real-time emergency reporting and management platform built with Flask and MySQL. Agencies can register, log in, view emergencies on a live map, and update their location to assist faster. Citizens can report emergencies which are immediately visible to all responding agencies.
+ResQForce is a real-time emergency reporting and management platform built using Flask (Python) for the backend and MySQL as the database. The platform is designed to bridge the communication gap between emergency response agencies and civilians during critical situations. It enables seamless coordination by providing a live map interface where all reported emergencies are displayed in real-time, helping first responders make quicker and more informed decisions.
 
-[![index](static/img/Screenshot 2025-04-11 074115.png)]([https://yourdestination.com](https://github.com/21aansh06/ResQForce/blob/main/static/img/Screenshot%202025-04-11%20074115.png))
+## 🖼️ Screenshots
 
 
 
