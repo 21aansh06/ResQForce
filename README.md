@@ -76,11 +76,3 @@ ResQForce/
 - Other Tools: Flask-CORS, flask-mysqldb, LEAFLET.JS
 
 
-
-# API endpoints
-- POST /api/report_emergency
-- GET  /api/emergencies
-- POST /api/update_location
-- GET  /api/agencies
-
-
