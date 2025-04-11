@@ -28,7 +28,7 @@ ResQForce is a real-time emergency reporting and management platform built using
 - Other Tools: Flask-CORS, flask-mysqldb, LEAFLET.JS
 
 ## 📁 Project Structure
-
+```plaintext
 ResQForce/
 │
 ├── app.py
@@ -63,7 +63,7 @@ ResQForce/
 │   ├── login.html
 │   ├── ndrf_dashboard.html
 │   └── register.html
-
+```
 
 
 # API endpoints
