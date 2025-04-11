@@ -27,7 +27,7 @@ ResQForce is a real-time emergency reporting and management platform built using
 - Frontend: HTML, CSS, JavaScript (via Jinja templates)
 - Other Tools: Flask-CORS, flask-mysqldb, LEAFLET.JS
 
-📁 Project Structure
+## 📁 Project Structure
 
 ResQForce/
 │
