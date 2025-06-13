@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for
-from flask_mysqldb import MySQL
 from flask_cors import CORS
+from pymongo import MongoClient
+from bson.objectid import ObjectId
 import hashlib
 import os
 from datetime import datetime
@@ -9,31 +10,12 @@ app = Flask(__name__)
 app.secret_key = os.urandom(24)
 CORS(app)
 
-# MySQL Configuration (Update with your credentials)
-app.config['MYSQL_HOST'] = 'localhost'
-app.config['MYSQL_USER'] = 'rescue_admi'
-app.config['MYSQL_PASSWORD'] = 'SecurePass1234!'
-app.config['MYSQL_DB'] = 'rescue_db'
-app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
-app.config['MYSQL_CONNECT_TIMEOUT'] = 10
-
-mysql = MySQL(app)
-
-# Database Connection Test
-try:
-    with app.app_context():
-        cur = mysql.connection.cursor()
-        cur.execute("SELECT 1")
-        print("✅ Database connection successful!")
-        cur.close()
-except Exception as e:
-    print(f"❌ Database connection failed: {str(e)}")
-    print("Troubleshooting steps:")
-    print("1. Verify MySQL service is running")
-    print("2. Check username/password")
-    print("3. Confirm database exists")
-    print("4. Check firewall settings")
-    exit(1)
+# MongoDB Configuration (Localhost)
+client = MongoClient("mongodb+srv://kbatra339:3zre6Icx07XDcK0I@cluster0.wgcc4j6.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+db = client['rescue_db']
+agencies_collection = db['agencies']
+emergencies_collection = db['emergencies']
+resources_collection = db['resources']
 
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
@@ -42,9 +24,9 @@ def hash_password(password):
 @app.route('/debug/emergencies')
 def debug_emergencies():
     try:
-        cur = mysql.connection.cursor()
-        cur.execute("SELECT * FROM emergencies")
-        emergencies = cur.fetchall()
+        emergencies = list(emergencies_collection.find())
+        for emergency in emergencies:
+            emergency['_id'] = str(emergency['_id'])
         return jsonify({
             'count': len(emergencies),
             'emergencies': emergencies
@@ -61,17 +43,13 @@ def login():
     if request.method == 'POST':
         email = request.form['email']
         password = hash_password(request.form['password'])
-        
+
         try:
-            cur = mysql.connection.cursor()
-            cur.execute("SELECT * FROM agencies WHERE email = %s", (email,))
-            agency = cur.fetchone()
-            
+            agency = agencies_collection.find_one({'email': email})
             if agency and agency['password'] == password:
-                session['agency_id'] = agency['id']
-                session['role'] = agency['role']
+                session['agency_id'] = str(agency['_id'])
+                session['role'] = agency.get('role', 'agency')
                 return redirect(url_for('dashboard'))
-            
             return render_template('login.html', error="Invalid credentials")
         except Exception as e:
             return render_template('login.html', error="Database error")
@@ -82,34 +60,29 @@ def register():
     if request.method == 'POST':
         data = request.form
         try:
-            cur = mysql.connection.cursor()
-            
-            cur.execute("SELECT email FROM agencies WHERE email = %s", (data['email'],))
-            if cur.fetchone():
+            if agencies_collection.find_one({'email': data['email']}):
                 return render_template('register.html', error="Email already registered")
-            
-            cur.execute("""
-                INSERT INTO agencies (name, email, password, expertise)
-                VALUES (%s, %s, %s, %s)
-            """, (
-                data['name'],
-                data['email'],
-                hash_password(data['password']),
-                data['expertise']
-            ))
-            mysql.connection.commit()
-            
-            cur.execute("SELECT id FROM agencies WHERE email = %s", (data['email'],))
-            new_agency = cur.fetchone()
-            
-            session['agency_id'] = new_agency['id']
+
+            agency_data = {
+                'name': data['name'],
+                'email': data['email'],
+                'password': hash_password(data['password']),
+                'expertise': data['expertise'],
+                'latitude': 20.5937,
+                'longitude': 78.9629,
+                'last_updated': None,
+                'role': 'agency',
+                'verified': False,
+                'agency_type': 'local'
+            }
+            result = agencies_collection.insert_one(agency_data)
+            session['agency_id'] = str(result.inserted_id)
             session['role'] = 'agency'
             return redirect(url_for('dashboard'))
-            
         except Exception as e:
-            mysql.connection.rollback()
             return render_template('register.html', error=str(e))
     return render_template('register.html')
+
 @app.route('/emergency_map')
 def emergency_map():
     if 'agency_id' not in session:
@@ -122,22 +95,23 @@ def report_emergency():
     lat = data.get('lat')
     lng = data.get('lng')
     description = data.get('description')
-    tag = data.get('tag')  # 👈 must match front-end 'tag'
+    tag = data.get('tag')
 
     try:
-        cur = mysql.connection.cursor()
-        cur.execute("""
-            INSERT INTO emergencies (latitude, longitude, description, tag, status, reported_by)
-            VALUES (%s, %s, %s, %s, %s, %s)
-        """, (lat, lng, description, tag, 'pending', 'public'))
-        mysql.connection.commit()
+        emergency_data = {
+            'latitude': lat,
+            'longitude': lng,
+            'description': description,
+            'status': 'pending',
+            'created_at': datetime.now(),
+            'reported_by': 'public',
+            'tag': tag
+        }
+        emergencies_collection.insert_one(emergency_data)
         return jsonify({'message': 'Emergency reported successfully'}), 200
     except Exception as e:
         print(f"[ERROR] {e}")
         return jsonify({'error': 'Failed to report emergency'}), 500
-
-
-
 
 @app.route('/client')
 def client_portal():
@@ -147,48 +121,42 @@ def client_portal():
 def update_location():
     if 'agency_id' not in session:
         return jsonify({'error': 'Unauthorized'}), 401
-        
+
     data = request.json
     try:
-        cur = mysql.connection.cursor()
-        cur.execute("""
-            UPDATE agencies 
-            SET latitude = %s, longitude = %s, last_updated = %s 
-            WHERE id = %s
-        """, (data['lat'], data['lng'], datetime.now(), session['agency_id']))
-        mysql.connection.commit()
-        
-        # Store in session for distance calculations
+        agencies_collection.update_one(
+            {'_id': ObjectId(session['agency_id'])},
+            {'$set': {
+                'latitude': data['lat'],
+                'longitude': data['lng'],
+                'last_updated': datetime.now()
+            }}
+        )
         session['latitude'] = data['lat']
         session['longitude'] = data['lng']
-        
         return jsonify({'status': 'success'})
     except Exception as e:
         print(f"[API ERROR] Location Update: {str(e)}")
         return jsonify({'error': str(e)}), 500
-    
+
 @app.route('/api/emergencies')
 def get_emergencies():
     try:
-        cur = mysql.connection.cursor()
-        cur.execute("""
-            SELECT *, 
-                CASE severity
-                    WHEN 'high' THEN '🔴 High'
-                    WHEN 'medium' THEN '🟡 Medium' 
-                    ELSE '🟢 Low'
-                END as severity_display
-            FROM emergencies
-            WHERE status = 'pending'
-            ORDER BY created_at DESC
-        """)
-        results = cur.fetchall()
-        print(f"[DEBUG] Found {len(results)} emergencies")
-        return jsonify(results)
+        emergencies = list(emergencies_collection.find({'status': 'pending'}).sort('created_at', -1))
+        for emergency in emergencies:
+            emergency['_id'] = str(emergency['_id'])
+            severity = emergency.get('severity', 'low')
+            if severity == 'high':
+                emergency['severity_display'] = '🔴 High'
+            elif severity == 'medium':
+                emergency['severity_display'] = '🟡 Medium'
+            else:
+                emergency['severity_display'] = '🟢 Low'
+        return jsonify(emergencies)
     except Exception as e:
         print(f"[API ERROR] Emergencies: {str(e)}")
         return jsonify({'error': 'Database error'}), 500
-# No filtering by severity or role anymore
+
 @app.route('/api/emergency_details')
 def get_all_emergency_details():
     if 'agency_id' not in session:
@@ -198,31 +166,24 @@ def get_all_emergency_details():
         lat = session.get('latitude', 20.5937)
         lng = session.get('longitude', 78.9629)
 
-        cur = mysql.connection.cursor()
+        emergencies = list(emergencies_collection.find({'status': 'pending'}).sort('created_at', -1))
+        for emergency in emergencies:
+            emergency['_id'] = str(emergency['_id'])
+            elat = float(emergency.get('latitude', 0))
+            elng = float(emergency.get('longitude', 0))
 
-        query = """
-            SELECT *, 
-                CAST(latitude AS DECIMAL(10,8)) AS latitude,
-                CAST(longitude AS DECIMAL(11,8)) AS longitude,
-                ROUND(6371000 * acos(
-                    cos(radians(%s)) * cos(radians(latitude)) * 
-                    cos(radians(longitude) - radians(%s)) + 
-                    sin(radians(%s)) * sin(radians(latitude))
-                )) AS distance
-            FROM emergencies
-            WHERE status = 'pending'
-            ORDER BY created_at DESC
-        """
-
-        cur.execute(query, (lat, lng, lat))
-        emergencies = cur.fetchall()
+            # Haversine formula (meters)
+            from math import radians, cos, sin, acos
+            distance = 6371000 * acos(
+                cos(radians(lat)) * cos(radians(elat)) *
+                cos(radians(elng) - radians(lng)) +
+                sin(radians(lat)) * sin(radians(elat))
+            )
+            emergency['distance'] = round(distance, 2)
         return jsonify(emergencies)
-
     except Exception as e:
         print(f"[ERROR] Emergency details: {str(e)}")
         return jsonify({'error': str(e)}), 500
-
-
 
 @app.route('/dashboard')
 def dashboard():
@@ -230,22 +191,20 @@ def dashboard():
         return redirect(url_for('login'))
 
     role = session.get('role', 'agency')
-
     if role == 'ndrf':
         return redirect(url_for('ndrf_dashboard'))
     else:
         return render_template('dashboard.html')
 
-
 @app.route('/api/agencies')
 def get_agencies():
     if 'agency_id' not in session:
         return jsonify({'error': 'Unauthorized'}), 401
-        
     try:
-        cur = mysql.connection.cursor()
-        cur.execute("SELECT id, name, latitude, longitude, expertise FROM agencies")
-        return jsonify(cur.fetchall())
+        agencies = list(agencies_collection.find({}, {'name':1, 'latitude':1, 'longitude':1, 'expertise':1}))
+        for agency in agencies:
+            agency['_id'] = str(agency['_id'])
+        return jsonify(agencies)
     except Exception as e:
         print(f"[API ERROR] Agencies: {str(e)}")
         return jsonify({'error': 'Database error'}), 500
@@ -255,12 +214,9 @@ def delete_all_emergencies():
     if 'agency_id' not in session:
         return jsonify({'error': 'Unauthorized'}), 401
     try:
-        cur = mysql.connection.cursor()
-        cur.execute("DELETE FROM emergencies")
-        mysql.connection.commit()
+        emergencies_collection.delete_many({})
         return jsonify({'status': 'All emergencies deleted'})
     except Exception as e:
-        mysql.connection.rollback()
         print(f"[DELETE ERROR] Failed to delete emergencies: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
@@ -274,7 +230,6 @@ def ndrf_dashboard():
     if 'agency_id' not in session or session.get('role') != 'ndrf':
         return redirect(url_for('login'))
     return render_template('ndrf_dashboard.html')
-
 
 if __name__ == '__main__':
     app.run(debug=True)
