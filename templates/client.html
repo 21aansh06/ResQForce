@@ -25,7 +25,14 @@
         .report-box h3 {
             font-size: 24px;
             color: #2eccff;
+            margin-bottom: 10px;
+        }
+
+        .disclaimer {
+            font-size: 12px;
+            color: #ccc;
             margin-bottom: 20px;
+            line-height: 1.4;
         }
 
         select, textarea {
@@ -77,6 +84,9 @@
 
     <div class="report-box">
         <h3>🚨 Report Emergency</h3>
+        <div class="disclaimer">
+            Disclaimer: This platform is intended for demonstration and informational purposes only. The reported emergencies may not be monitored by official agencies. For real-life emergencies, please contact the appropriate local authorities directly.
+        </div>
         <form onsubmit="reportEmergency(event)">
             <select id="tagDropdown">
                 <option value="fire">🔥 Fire</option>
